@@ -2,23 +2,25 @@
 // CONFIGURATION: DATA SUPABASE ANDA
 // =======================================================
 const SUPABASE_URL = "https://bawlxbtnocmangcblngu.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_ZZvJjet_A_XfGmqfNJhPOg_-P3z_snJ"; // <-- JANGAN LUPA TEMPEL ANON KEY ANDA DI SINI
+const SUPABASE_ANON_KEY = "sb_publishable_ZZvJjet_A_XfGmqfNJhPOg_-P3z_snJ"; // <-- JANGAN LUPA PASTE ANON KEY ANDA DI SINI
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentWorker = localStorage.getItem('worker_name') || '';
 
 // =======================================================
-// SYSTEM LOGIN & SESSION CACHE
+// SYSTEM LOGIN & SESSION CHECK
 // =======================================================
 function checkSession() {
   const loginPanel = document.getElementById('login-panel');
   const mainTracker = document.getElementById('main-tracker');
   const userDisplay = document.getElementById('currentUserDisplay');
+  const avatarLetter = document.getElementById('avatarLetter');
 
   if (currentWorker) {
     if (loginPanel) loginPanel.classList.add('hidden');
     if (mainTracker) mainTracker.classList.remove('hidden');
     if (userDisplay) userDisplay.innerText = currentWorker;
+    if (avatarLetter) avatarLetter.innerText = currentWorker.charAt(0).toUpperCase();
     fetchTasks();
   } else {
     if (loginPanel) loginPanel.classList.remove('hidden');
@@ -43,7 +45,7 @@ function handleLogout() {
 }
 
 // =======================================================
-// FUNGSI AMBIL DATA & RENDER (MENAMPILKAN NAMA PEGAWAI)
+// FETCH DATA & RENDER (GAYA KARTU MINIMALIS)
 // =======================================================
 async function fetchTasks() {
   if (!currentWorker) return;
@@ -60,9 +62,6 @@ async function fetchTasks() {
   }
 }
 
-// =======================================================
-// 2. FUNGSI TAMPILKAN DATA KE HALAMAN WEB (HTML) - PROTECTED VERSION
-// =======================================================
 function renderTasks(tasks) {
   const todoList = document.getElementById('todo-list');
   const inprogressList = document.getElementById('inprogress-list');
@@ -74,50 +73,72 @@ function renderTasks(tasks) {
   inprogressList.innerHTML = '';
   doneList.innerHTML = '';
 
+  let todoCount = 0;
+  let inprogressCount = 0;
+  let doneCount = 0;
+
   tasks.forEach(task => {
     const card = document.createElement('div');
-    card.className = "bg-gray-700/90 p-3.5 rounded-lg shadow border border-gray-600/70 flex flex-col gap-2 transition hover:border-gray-500";
+    // Desain Box Kartu Putih Minimalis dengan bayangan lembut (Persis Referensi Gambar)
+    card.className = "bg-white p-4 rounded-xl border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-3 transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]";
     
-    // Ambil nama pembuat jika ada di database, jika tidak tampilkan Anonim
     const creator = task.worker_name ? task.worker_name : 'Anonim';
-
-    // ---------------------------------------------------
-    // LOGIKA PROTEKSI: Cek apakah user yang login sama dengan pembuat tugas
-    // ---------------------------------------------------
     const isOwner = currentWorker.toLowerCase() === creator.toLowerCase();
 
     let actionButton = '';
     
     if (isOwner) {
-      // Jika yang login adalah pemilik tugas, berikan tombol aktif seperti biasa
       if (task.status === 'todo') {
-        actionButton = `<button onclick="updateStatus(${task.id}, 'in_progress')" class="w-full bg-yellow-600 hover:bg-yellow-500 text-xs py-1.5 rounded text-white font-medium cursor-pointer">Mulai Kerja</button>`;
+        actionButton = `<button onclick="updateStatus(${task.id}, 'in_progress')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold py-2 rounded-lg transition-all cursor-pointer">Mulai Kerja →</button>`;
       } else if (task.status === 'in_progress') {
-        actionButton = `<button onclick="updateStatus(${task.id}, 'done')" class="w-full bg-green-600 hover:bg-green-500 text-xs py-1.5 rounded text-white font-medium cursor-pointer">Selesai</button>`;
+        actionButton = `<button onclick="updateStatus(${task.id}, 'done')" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-bold py-2 rounded-lg transition-all cursor-pointer">Selesai ✓</button>`;
       } else if (task.status === 'done') {
-        actionButton = `<button onclick="updateStatus(${task.id}, 'todo')" class="w-full bg-gray-500 hover:bg-gray-400 text-xs py-1.5 rounded text-white font-medium cursor-pointer">Reset</button>`;
+        actionButton = `<button onclick="updateStatus(${task.id}, 'todo')" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs font-bold py-2 rounded-lg transition-all cursor-pointer">Reset Kembali</button>`;
       }
     } else {
-      // Jika BUKAN pemilik tugas, tombol dikunci (disabled) dan warnanya dibuat pudar (gray-600)
-      actionButton = `<button disabled class="w-full bg-gray-600 text-gray-400 text-xs py-1.5 rounded font-medium opacity-50 cursor-not-allowed text-center">Dikunci (Bukan Tugas Anda)</button>`;
+      actionButton = `<button disabled class="w-full bg-slate-50 text-slate-400 text-[11px] py-2 rounded-lg font-medium cursor-not-allowed text-center">Terkunci (Bukan Tugas Anda)</button>`;
     }
 
+    // Mengambil inisial huruf nama pembuat untuk dijadikan avatar kecil di pojok kanan kartu
+    const initial = creator.charAt(0).toUpperCase();
+
     card.innerHTML = `
-      <div class="flex flex-col">
-        <p class="font-semibold text-gray-100 text-sm break-all">${task.title}</p>
-        <span class="text-[10px] text-gray-400 mt-1 bg-gray-800/50 px-2 py-0.5 rounded-md w-fit border border-gray-600/30">👤 Oleh: ${creator}</span>
+      <div class="flex flex-col gap-1">
+        <p class="font-bold text-slate-800 text-[13px] leading-snug break-all">${task.title}</p>
       </div>
+      
+      <div class="flex items-center justify-between border-t border-slate-50 pt-2.5 mt-1">
+        <span class="text-[10px] text-slate-700 bg-slate-100 font-bold px-2 py-0.5 rounded-md">Oleh: ${creator}</span>
+        
+        <div class="w-5 h-5 bg-blue-600 text-white font-bold rounded-full flex items-center justify-center text-[9px] uppercase" title="Pembuat: ${creator}">
+          ${initial}
+        </div>
+      </div>
+
       <div class="mt-1">${actionButton}</div>
     `;
 
-    if (task.status === 'todo') todoList.appendChild(card);
-    if (task.status === 'in_progress') inprogressList.appendChild(card);
-    if (task.status === 'done') doneList.appendChild(card);
+    // Kelompokkan & Hitung Jumlah Tugas
+    if (task.status === 'todo') {
+      todoList.appendChild(card);
+      todoCount++;
+    } else if (task.status === 'in_progress') {
+      inprogressList.appendChild(card);
+      inprogressCount++;
+    } else if (task.status === 'done') {
+      doneList.appendChild(card);
+      doneCount++;
+    }
   });
+
+  // Tampilkan Angka Total Tugas di Header Kolom
+  document.getElementById('todo-count').innerText = todoCount;
+  document.getElementById('inprogress-count').innerText = inprogressCount;
+  document.getElementById('done-count').innerText = doneCount;
 }
 
 // =======================================================
-// FUNGSI TAMBAH DATA (MENYIMPAN NAMA PEGAWAI)
+// TAMBAH DATA & UPDATE DATA
 // =======================================================
 async function addTask() {
   const input = document.getElementById('taskInput');
@@ -127,7 +148,6 @@ async function addTask() {
   if (!title) return;
 
   try {
-    // Menyimpan judul DAN nama pegawai aktif ke database
     const { error } = await supabaseClient
       .from('tasks')
       .insert([{ title: title, status: 'todo', worker_name: currentWorker }]);
@@ -149,7 +169,7 @@ async function updateStatus(id, newStatus) {
 }
 
 // =======================================================
-// REAL-TIME SINKRONISASI
+// REAL-TIME INSTANT CHANGE
 // =======================================================
 supabaseClient
   .channel('schema-db-changes')
@@ -158,5 +178,4 @@ supabaseClient
   })
   .subscribe();
 
-// Jalankan pengecekan login saat web dibuka
 checkSession();
