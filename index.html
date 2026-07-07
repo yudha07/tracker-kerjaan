@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Task Tracker</title>
+  <!-- Tailwind CSS untuk Desain -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4 md:p-8">
+
+  <!-- Header -->
+  <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+    <h1 class="text-2xl font-bold text-blue-400">📊 Realtime Task Tracker</h1>
+    <!-- Input Tugas Baru -->
+    <div class="flex w-full sm:w-auto gap-2">
+      <input id="taskInput" type="text" placeholder="Tambah kerjaan baru..." class="bg-gray-800 border border-gray-700 px-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 flex-grow text-white">
+      <button onclick="addTask()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition">Tambah</button>
+    </div>
+  </div>
+
+  <!-- Papan Kerja (Responsive Grid) -->
+  <!-- 1 Kolom di HP, otomatis jadi 3 Kolom di Desktop (md:) -->
+  <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+    
+    <!-- Kolom: Belum Dikerjakan -->
+    <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+      <h2 class="text-red-400 font-bold text-lg mb-4 flex items-center gap-2">🔴 Belum Dikerjakan</h2>
+      <div id="todo-list" class="space-y-3"></div>
+    </div>
+
+    <!-- Kolom: Sementara Berjalan -->
+    <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+      <h2 class="text-yellow-400 font-bold text-lg mb-4 flex items-center gap-2">🟡 Sementara Berjalan</h2>
+      <div id="inprogress-list" class="space-y-3"></div>
+    </div>
+
+    <!-- Kolom: Selesai -->
+    <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+      <h2 class="text-green-400 font-bold text-lg mb-4 flex items-center gap-2">🟢 Selesai</h2>
+      <div id="done-list" class="space-y-3"></div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
