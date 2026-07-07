@@ -1,6 +1,6 @@
 // TODO: Ganti dengan kredensial Supabase Anda sendiri
-const SUPABASE_URL = "https://XYZ_PROJECT_ID.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_URL = "https://bawlxbtnocmangcblngu.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_ZZvJjet_A_XfGmqfNJhPOg_-P3z_snJ";
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
