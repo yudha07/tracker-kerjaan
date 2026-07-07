@@ -60,6 +60,9 @@ async function fetchTasks() {
   }
 }
 
+// =======================================================
+// 2. FUNGSI TAMPILKAN DATA KE HALAMAN WEB (HTML) - PROTECTED VERSION
+// =======================================================
 function renderTasks(tasks) {
   const todoList = document.getElementById('todo-list');
   const inprogressList = document.getElementById('inprogress-list');
@@ -75,17 +78,29 @@ function renderTasks(tasks) {
     const card = document.createElement('div');
     card.className = "bg-gray-700/90 p-3.5 rounded-lg shadow border border-gray-600/70 flex flex-col gap-2 transition hover:border-gray-500";
     
-    let actionButton = '';
-    if (task.status === 'todo') {
-      actionButton = `<button onclick="updateStatus(${task.id}, 'in_progress')" class="w-full bg-yellow-600 hover:bg-yellow-500 text-xs py-1.5 rounded text-white font-medium cursor-pointer">Mulai Kerja</button>`;
-    } else if (task.status === 'in_progress') {
-      actionButton = `<button onclick="updateStatus(${task.id}, 'done')" class="w-full bg-green-600 hover:bg-green-500 text-xs py-1.5 rounded text-white font-medium cursor-pointer">Selesai</button>`;
-    } else if (task.status === 'done') {
-      actionButton = `<button onclick="updateStatus(${task.id}, 'todo')" class="w-full bg-gray-500 hover:bg-gray-400 text-xs py-1.5 rounded text-white font-medium cursor-pointer">Reset</button>`;
-    }
-
     // Ambil nama pembuat jika ada di database, jika tidak tampilkan Anonim
     const creator = task.worker_name ? task.worker_name : 'Anonim';
+
+    // ---------------------------------------------------
+    // LOGIKA PROTEKSI: Cek apakah user yang login sama dengan pembuat tugas
+    // ---------------------------------------------------
+    const isOwner = currentWorker.toLowerCase() === creator.toLowerCase();
+
+    let actionButton = '';
+    
+    if (isOwner) {
+      // Jika yang login adalah pemilik tugas, berikan tombol aktif seperti biasa
+      if (task.status === 'todo') {
+        actionButton = `<button onclick="updateStatus(${task.id}, 'in_progress')" class="w-full bg-yellow-600 hover:bg-yellow-500 text-xs py-1.5 rounded text-white font-medium cursor-pointer">Mulai Kerja</button>`;
+      } else if (task.status === 'in_progress') {
+        actionButton = `<button onclick="updateStatus(${task.id}, 'done')" class="w-full bg-green-600 hover:bg-green-500 text-xs py-1.5 rounded text-white font-medium cursor-pointer">Selesai</button>`;
+      } else if (task.status === 'done') {
+        actionButton = `<button onclick="updateStatus(${task.id}, 'todo')" class="w-full bg-gray-500 hover:bg-gray-400 text-xs py-1.5 rounded text-white font-medium cursor-pointer">Reset</button>`;
+      }
+    } else {
+      // Jika BUKAN pemilik tugas, tombol dikunci (disabled) dan warnanya dibuat pudar (gray-600)
+      actionButton = `<button disabled class="w-full bg-gray-600 text-gray-400 text-xs py-1.5 rounded font-medium opacity-50 cursor-not-allowed text-center">Dikunci (Bukan Tugas Anda)</button>`;
+    }
 
     card.innerHTML = `
       <div class="flex flex-col">
