@@ -129,7 +129,37 @@
 
     </main>
   </div>
+<div id="detailModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 p-4 transition-all">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-2xl w-full max-w-lg p-6 overflow-hidden scale-95 transition-all">
+      
+      <div class="flex items-center justify-between mb-4 border-b border-slate-50 pb-3">
+        <div class="flex items-center gap-2">
+          <span id="detailStatusBadge" class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md">Status</span>
+        </div>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">✕</button>
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Judul Project</label>
+          <h2 id="detailTitle" class="text-base md:text-lg font-bold text-slate-800 leading-snug break-words">Judul Pekerjaan</h2>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Notes / Catatan Lengkap</label>
+          <div id="detailNotes" class="bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm text-slate-600 leading-relaxed max-h-60 overflow-y-auto whitespace-pre-line break-words">
+            Tidak ada catatan tambahan untuk tugas ini.
+          </div>
+        </div>
+        
+        <div class="flex items-center justify-between border-t border-slate-50 pt-3 text-[11px] text-slate-400">
+          <p>Dibuat Oleh: <span id="detailWorker" class="font-semibold text-slate-600">Nama</span></p>
+          <button onclick="closeDetailModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer">Tutup</button>
+        </div>
+      </div>
 
+    </div>
+  </div>
 <!-- ================= MODAL POP-UP TAMBAH TASK ================= -->
   <div id="taskModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 p-4 transition-all">
     <div class="bg-white rounded-2xl border border-slate-100 shadow-2xl w-full max-w-md p-6 overflow-hidden scale-95 transition-all">
