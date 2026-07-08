@@ -105,11 +105,12 @@ function renderTasks(tasks) {
     card.innerHTML = `
       <div class="flex flex-col gap-1">
         <p class="font-bold text-slate-800 text-[13px] leading-snug break-all">${task.title}</p>
+        <!-- Tampilkan notes jika ada isinya di database -->
+        ${task.notes ? `<p class="text-[11px] text-slate-400 leading-normal mt-0.5 border-l-2 border-slate-200 pl-1.5 bg-slate-50/40 p-1 rounded-r">${task.notes}</p>` : ''}
       </div>
       
       <div class="flex items-center justify-between border-t border-slate-50 pt-2.5 mt-1">
         <span class="text-[10px] text-slate-700 bg-slate-100 font-bold px-2 py-0.5 rounded-md">Oleh: ${creator}</span>
-        
         <div class="w-5 h-5 bg-blue-600 text-white font-bold rounded-full flex items-center justify-center text-[9px] uppercase" title="Pembuat: ${creator}">
           ${initial}
         </div>
@@ -138,31 +139,50 @@ function renderTasks(tasks) {
 }
 
 // =======================================================
-// TAMBAH DATA & UPDATE DATA
+// FUNGSI KONTROL MODAL POP-UP
 // =======================================================
-async function addTask() {
-  const input = document.getElementById('taskInput');
-  if (!input) return;
+function openModal() {
+  const modal = document.getElementById('taskModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.getElementById('modalTaskTitle').focus();
+  }
+}
+
+function closeModal() {
+  const modal = document.getElementById('taskModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    // Bersihkan form setelah ditutup
+    document.getElementById('modalTaskTitle').value = '';
+    document.getElementById('modalTaskNotes').value = '';
+  }
+}
+
+async function submitModalTask() {
+  const titleInput = document.getElementById('modalTaskTitle');
+  const notesInput = document.getElementById('modalTaskNotes');
   
-  const title = input.value.trim();
-  if (!title) return;
+  const title = titleInput ? titleInput.value.trim() : '';
+  const notes = notesInput ? notesInput.value.trim() : '';
+
+  if (!title) return alert('Judul project wajib diisi!');
 
   try {
     const { error } = await supabaseClient
       .from('tasks')
-      .insert([{ title: title, status: 'todo', worker_name: currentWorker }]);
+      .insert([{ 
+        title: title, 
+        notes: notes, // Menyimpan isi form catatan ke kolom notes Supabase
+        status: 'todo', 
+        worker_name: currentWorker 
+      }]);
       
-    if (error) alert('Gagal menambah tugas: ' + error.message);
-    else input.value = '';
-  } catch (err) {
-    console.error('System error:', err);
-  }
-}
-
-async function updateStatus(id, newStatus) {
-  try {
-    const { error } = await supabaseClient.from('tasks').update({ status: newStatus }).eq('id', id);
-    if (error) console.error('Gagal update status:', error.message);
+    if (error) {
+      alert('Gagal menambah tugas: ' + error.message);
+    } else {
+      closeModal(); // Otomatis tutup modal jika sukses
+    }
   } catch (err) {
     console.error('System error:', err);
   }
