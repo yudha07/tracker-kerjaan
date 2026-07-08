@@ -55,10 +55,10 @@
         <div class="flex items-center gap-2.5 overflow-hidden">
           <div class="w-9 h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold uppercase shrink-0" id="avatarLetter">Y</div>
           <div class="truncate">
-  <p class="text-xs font-bold text-slate-800 truncate" id="currentUserDisplay"></p>
-  <p class="text-[10px] text-green-500 font-medium flex items-center gap-1">
-    <span class="animate-pulse">●</span> Online
-  </p>
+            <p class="text-xs font-bold text-slate-800 truncate" id="currentUserDisplay"></p>
+            <p class="text-[10px] text-green-500 font-medium flex items-center gap-1">
+              <span class="kedip-cepat">●</span> Online
+          </p>
 </div>
         </div>
         <button onclick="handleLogout()" class="text-xs hover:bg-slate-200 p-1.5 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer" title="Keluar">🚪 Logout</button>
@@ -87,7 +87,7 @@
           <div class="bg-[#FFFDF9] border border-[#F5EFE4] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
+                <div class="w-2 h-2 rounded-full bg-amber-400 kedip-cepat"></div>
                 <h2 class="text-xs font-bold uppercase tracking-wider text-amber-700">To Do</h2>
               </div>
               <span id="todo-count" class="text-[11px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full">0</span>
@@ -98,7 +98,7 @@
           <div class="bg-[#F9FAFE] border border-[#EBF0FA] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                <div class="w-2 h-2 rounded-full bg-indigo-500 kedip-cepat"></div>
                 <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-700">In Progress</h2>
               </div>
               <span id="inprogress-count" class="text-[11px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">0</span>
@@ -109,7 +109,7 @@
           <div class="bg-[#FFF9FA] border border-[#FCEAEF] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
             <div class="flex items-center justify-between mb-4 px-1">
               <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></div>
+                <div class="w-2 h-2 rounded-full bg-pink-500 kedip-cepat"></div>
                 <h2 class="text-xs font-bold uppercase tracking-wider text-pink-700">Done</h2>
               </div>
               <span id="done-count" class="text-[11px] font-bold bg-pink-50 text-pink-600 px-2 py-0.5 rounded-full">0</span>
