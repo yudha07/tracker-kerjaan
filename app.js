@@ -79,7 +79,7 @@ function renderTasks(tasks) {
 
   tasks.forEach(task => {
     const card = document.createElement('div');
-    // Desain Box Kartu Putih Minimalis dengan bayangan lembut (Persis Referensi Gambar)
+    // Box Kartu Putih Utama (cursor pointer dihilangkan di sini agar tombol di bawah tidak ikut memicu modal)
     card.className = "bg-white p-4 rounded-xl border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-3 transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]";
     
     const creator = task.worker_name ? task.worker_name : 'Anonim';
@@ -99,14 +99,15 @@ function renderTasks(tasks) {
       actionButton = `<button disabled class="w-full bg-slate-50 text-slate-400 text-[11px] py-2 rounded-lg font-medium cursor-not-allowed text-center">Terkunci (Bukan Tugas Anda)</button>`;
     }
 
-    // Mengambil inisial huruf nama pembuat untuk dijadikan avatar kecil di pojok kanan kartu
     const initial = creator.charAt(0).toUpperCase();
 
+    // Data task diubah menjadi format string yang aman untuk dimasukkan ke fungsi onclick html
+    const safeTaskJson = JSON.stringify(task).replace(/"/g, '&quot;');
+
     card.innerHTML = `
-      <div class="flex flex-col gap-1">
-        <p class="font-bold text-slate-800 text-[13px] leading-snug break-all">${task.title}</p>
-        <!-- Tampilkan notes jika ada isinya di database -->
-        ${task.notes ? `<p class="text-[11px] text-slate-400 leading-normal mt-0.5 border-l-2 border-slate-200 pl-1.5 bg-slate-50/40 p-1 rounded-r">${task.notes}</p>` : ''}
+      <div class="cursor-pointer group flex flex-col gap-1 flex-1" onclick="openDetailModal(${safeTaskJson})">
+        <p class="font-bold text-slate-800 text-[13px] leading-snug break-all group-hover:text-blue-600 transition-colors">${task.title}</p>
+        ${task.notes ? `<p class="text-[11px] text-slate-400 leading-normal mt-0.5 line-clamp-2 border-l-2 border-slate-200 pl-1.5">${task.notes}</p>` : ''}
       </div>
       
       <div class="flex items-center justify-between border-t border-slate-50 pt-2.5 mt-1">
@@ -116,7 +117,7 @@ function renderTasks(tasks) {
         </div>
       </div>
 
-      <div class="mt-1">${actionButton}</div>
+      <div class="mt-1 relative z-10">${actionButton}</div>
     `;
 
     // Kelompokkan & Hitung Jumlah Tugas
@@ -139,13 +140,36 @@ function renderTasks(tasks) {
 }
 
 // =======================================================
-// FUNGSI KONTROL MODAL POP-UP
+// FUNGSI UPDATE STATUS TUGAS
+// =======================================================
+async function updateStatus(taskId, newStatus) {
+  try {
+    const { error } = await supabaseClient
+      .from('tasks')
+      .update({ status: newStatus })
+      .eq('id', taskId);
+
+    if (error) alert('Gagal memperbarui status: ' + error.message);
+  } catch (err) {
+    console.error('System error:', err);
+  }
+}
+
+// =======================================================
+// FUNGSI KONTROL MODAL TAMBAH TASK
 // =======================================================
 function openModal() {
   const modal = document.getElementById('taskModal');
   if (modal) {
     modal.classList.remove('hidden');
     document.getElementById('modalTaskTitle').focus();
+
+    // Event Klik di luar area pop-up untuk menutup modal tambah task
+    modal.onclick = function(event) {
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
   }
 }
 
@@ -153,7 +177,7 @@ function closeModal() {
   const modal = document.getElementById('taskModal');
   if (modal) {
     modal.classList.add('hidden');
-    // Bersihkan form setelah ditutup
+    modal.onclick = null; // Bersihkan event listener
     document.getElementById('modalTaskTitle').value = '';
     document.getElementById('modalTaskNotes').value = '';
   }
@@ -173,7 +197,7 @@ async function submitModalTask() {
       .from('tasks')
       .insert([{ 
         title: title, 
-        notes: notes, // Menyimpan isi form catatan ke kolom notes Supabase
+        notes: notes, 
         status: 'todo', 
         worker_name: currentWorker 
       }]);
@@ -181,10 +205,69 @@ async function submitModalTask() {
     if (error) {
       alert('Gagal menambah tugas: ' + error.message);
     } else {
-      closeModal(); // Otomatis tutup modal jika sukses
+      closeModal();
     }
   } catch (err) {
     console.error('System error:', err);
+  }
+}
+
+// =======================================================
+// FUNGSI KONTROL MODAL DETAIL PREVIEW TASK
+// =======================================================
+function openDetailModal(task) {
+  if (!task) return;
+
+  const modal = document.getElementById('detailModal');
+  const titleEl = document.getElementById('detailTitle');
+  const notesEl = document.getElementById('detailNotes');
+  const workerEl = document.getElementById('detailWorker');
+  const badgeEl = document.getElementById('detailStatusBadge');
+
+  if (!modal) return;
+
+  if (titleEl) titleEl.innerText = task.title;
+  if (workerEl) workerEl.innerText = task.worker_name || 'Anonim';
+
+  if (notesEl) {
+    if (task.notes && task.notes.trim() !== '') {
+      notesEl.innerText = task.notes;
+      notesEl.classList.remove('italic', 'text-slate-400');
+    } else {
+      notesEl.innerText = "Tidak ada catatan atau deskripsi tambahan untuk tugas ini.";
+      notesEl.classList.add('italic', 'text-slate-400');
+    }
+  }
+
+  if (badgeEl) {
+    if (task.status === 'todo') {
+      badgeEl.innerText = "To Do";
+      badgeEl.className = "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-600 border border-amber-100";
+    } else if (task.status === 'in_progress') {
+      badgeEl.innerText = "In Progress";
+      badgeEl.className = "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100";
+    } else if (task.status === 'done') {
+      badgeEl.innerText = "Done";
+      badgeEl.className = "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-pink-50 text-pink-600 border border-pink-100";
+    }
+  }
+
+  // Tampilkan Modal Detail
+  modal.classList.remove('hidden');
+
+  // Event Klik di luar area pop-up untuk menutup modal detail task
+  modal.onclick = function(event) {
+    if (event.target === modal) {
+      closeDetailModal();
+    }
+  };
+}
+
+function closeDetailModal() {
+  const modal = document.getElementById('detailModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.onclick = null; // Bersihkan event listener
   }
 }
 
