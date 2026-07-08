@@ -48,9 +48,11 @@
         <div class="flex items-center gap-2.5 overflow-hidden">
           <div class="w-9 h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold uppercase shrink-0" id="avatarLetter">Y</div>
           <div class="truncate">
-            <p class="text-xs font-bold text-slate-800 truncate" id="currentUserDisplay"></p>
-            <p class="text-[10px] text-green-500 font-medium flex items-center gap-1">● Online</p>
-          </div>
+  <p class="text-xs font-bold text-slate-800 truncate" id="currentUserDisplay"></p>
+  <p class="text-[10px] text-green-500 font-medium flex items-center gap-1">
+    <span class="animate-pulse">●</span> Online
+  </p>
+</div>
         </div>
         <button onclick="handleLogout()" class="text-xs hover:bg-slate-200 p-1.5 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer" title="Keluar">🚪 Logout</button>
       </div>
@@ -60,7 +62,7 @@
       
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 id="customTitle" class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Design boards</h1>
+          <h1 id="customTitle" class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Dashboards</h1>
           <p class="text-xs text-slate-400 mt-0.5">Gatras & Intim Project Tracker</p>
         </div>
         
