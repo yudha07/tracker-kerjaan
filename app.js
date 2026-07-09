@@ -188,4 +188,247 @@ async function fetchProjects() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error)
+    if (error) {
+      console.error('Error ambil data project:', error.message);
+      return;
+    }
+
+    const verticalContainer = document.getElementById('projects-vertical-list');
+    const totalCountBadge = document.getElementById('project-total-count');
+    
+    if (!verticalContainer) return;
+    verticalContainer.innerHTML = '';
+    if (totalCountBadge) totalCountBadge.innerText = `${tasks.length} Projects`;
+
+    if (tasks.length === 0) {
+      verticalContainer.innerHTML = `<p class="text-sm text-slate-400 italic text-center py-6">Belum ada project terdaftar.</p>`;
+      return;
+    }
+
+    tasks.forEach(task => {
+      const creator = task.worker_name || 'Anonim';
+      
+      // Bagian visual tampilan arahan master yang sudah ada
+      const notesHTML = task.master_notes 
+        ? `<div class="bg-amber-50 border border-amber-100 rounded-xl p-3.5 text-xs text-amber-900 leading-relaxed mt-2">
+            <strong>📋 Arahan Master:</strong> "${task.master_notes}"
+           </div>` 
+        : `<div class="text-[11px] text-slate-400 italic mt-2 pl-1">Belum ada arahan dari master.</div>`;
+
+      // KONTROL AKSES: Box input pengetikan arahan hanya dibuat jika login sebagai Master
+      let masterActionHTML = "";
+      if (isMasterUser()) {
+        masterActionHTML = `
+          <div class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2">
+            <input type="text" id="master-input-${task.id}" placeholder="Berikan arahan atau catatan khusus untuk project ini..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition-all">
+            <button onclick="submitMasterNote(${task.id})" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-4 py-2 rounded-xl shadow-md transition-all cursor-pointer shrink-0">Kirim</button>
+          </div>
+        `;
+      }
+
+      const itemCard = document.createElement('div');
+      itemCard.className = "p-5 bg-white border border-slate-100 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.01)] flex flex-col gap-1.5";
+      itemCard.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h4 class="text-sm font-bold text-slate-800 leading-snug">${task.title}</h4>
+            <p class="text-xs text-slate-400 mt-1">${task.notes || 'Tidak ada deskripsi'}</p>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 shrink-0 uppercase tracking-wider">Oleh: ${creator}</span>
+        </div>
+        
+        ${notesHTML}
+        ${masterActionHTML}
+      `;
+      verticalContainer.appendChild(itemCard);
+    });
+
+  } catch (err) {
+    console.error('System error vertical lists:', err);
+  }
+}
+
+// =======================================================
+// FUNGSI UPDATE STATUS TUGAS & SIMPAN ARAHAN MASTER
+// =======================================================
+async function updateStatus(taskId, newStatus) {
+  try {
+    const { error } = await supabaseClient
+      .from('tasks')
+      .update({ status: newStatus })
+      .eq('id', taskId);
+
+    if (error) alert('Gagal memperbarui status: ' + error.message);
+  } catch (err) {
+    console.error('System error:', err);
+  }
+}
+
+async function submitMasterNote(taskId) {
+  const inputEl = document.getElementById(`master-input-${taskId}`);
+  const noteValue = inputEl ? inputEl.value.trim() : "";
+
+  if (!noteValue) return alert("Catatan arahan tidak boleh kosong!");
+
+  try {
+    const { error } = await supabaseClient
+      .from('tasks')
+      .update({ master_notes: noteValue }) // Update kolom master_notes di baris ID project ini
+      .eq('id', taskId);
+
+    if (error) {
+      alert("Gagal mengirim arahan: " + error.message);
+    } else {
+      alert("Arahan berhasil disimpan!");
+      fetchProjects(); // Segarkan tampilan vertical list otomatis
+    }
+  } catch (err) {
+    console.error("Gagal save note:", err);
+  }
+}
+
+// =======================================================
+// FUNGSI KONTROL MODAL TAMBAH TASK
+// =======================================================
+function openModal() {
+  const modal = document.getElementById('taskModal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.getElementById('modalTaskTitle').focus();
+
+    modal.onclick = function(event) {
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+  }
+}
+
+function closeModal() {
+  const modal = document.getElementById('taskModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.onclick = null;
+    document.getElementById('modalTaskTitle').value = '';
+    document.getElementById('modalTaskNotes').value = '';
+    
+    // PEMBARUAN: Mengosongkan value input tanggal deadline saat modal ditutup
+    const deadlineInput = document.getElementById('modalTaskDeadline');
+    if (deadlineInput) deadlineInput.value = '';
+  }
+}
+
+async function submitModalTask() {
+  const titleInput = document.getElementById('modalTaskTitle');
+  const notesInput = document.getElementById('modalTaskNotes');
+  const deadlineInput = document.getElementById('modalTaskDeadline'); // PEMBARUAN: Ambil elemen tanggal
+  
+  const title = titleInput ? titleInput.value.trim() : '';
+  const notes = notesInput ? notesInput.value.trim() : '';
+  const deadline = deadlineInput ? deadlineInput.value : null; // PEMBARUAN: Ambil isi value tanggal (Format: YYYY-MM-DD)
+
+  if (!title) return alert('Judul project wajib diisi!');
+
+  try {
+    // PEMBARUAN: Menambahkan kolom 'deadline' ke dalam objek insert Supabase
+    const { error } = await supabaseClient
+      .from('tasks')
+      .insert([{ 
+        title: title, 
+        notes: notes, 
+        status: 'todo', 
+        worker_name: currentWorker,
+        deadline: deadline || null // Jika kosong, akan dikirim sebagai NULL aman di database
+      }]);
+      
+    if (error) {
+      alert('Gagal menambah tugas: ' + error.message);
+    } else {
+      closeModal();
+    }
+  } catch (err) {
+    console.error('System error:', err);
+  }
+}
+
+// =======================================================
+// FUNGSI KONTROL MODAL DETAIL PREVIEW TASK
+// =======================================================
+function openDetailModal(task) {
+  if (!task) return;
+
+  const modal = document.getElementById('detailModal');
+  const titleEl = document.getElementById('detailTitle');
+  const notesEl = document.getElementById('detailNotes');
+  const workerEl = document.getElementById('detailWorker');
+  const badgeEl = document.getElementById('detailStatusBadge');
+  const masterNotesEl = document.getElementById('detailMasterNotes');
+
+  if (!modal) return;
+
+  if (titleEl) titleEl.innerText = task.title;
+  if (workerEl) workerEl.innerText = task.worker_name || 'Anonim';
+
+  if (notesEl) {
+    if (task.notes && task.notes.trim() !== '') {
+      notesEl.innerText = task.notes;
+      notesEl.classList.remove('italic', 'text-slate-400');
+    } else {
+      notesEl.innerText = "Tidak ada catatan atau deskripsi tambahan untuk tugas ini.";
+      notesEl.classList.add('italic', 'text-slate-400');
+    }
+  }
+
+  // Tampilkan arahan master di dalam modal detail jika ada
+  if (masterNotesEl) {
+    if (task.master_notes && task.master_notes.trim() !== '') {
+      masterNotesEl.innerText = task.master_notes;
+      masterNotesEl.classList.remove('italic', 'text-slate-400');
+    } else {
+      masterNotesEl.innerText = "Belum ada arahan dari master.";
+      masterNotesEl.classList.add('italic', 'text-slate-400');
+    }
+  }
+
+  if (badgeEl) {
+    if (task.status === 'todo') {
+      badgeEl.innerText = "To Do";
+      badgeEl.className = "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-600 border border-amber-100";
+    } else if (task.status === 'in_progress') {
+      badgeEl.innerText = "In Progress";
+      badgeEl.className = "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100";
+    } else if (task.status === 'done') {
+      badgeEl.innerText = "Done";
+      badgeEl.className = "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-pink-50 text-pink-600 border border-pink-100";
+    }
+  }
+
+  modal.classList.remove('hidden');
+
+  modal.onclick = function(event) {
+    if (event.target === modal) {
+      closeDetailModal();
+    }
+  };
+}
+
+function closeDetailModal() {
+  const modal = document.getElementById('detailModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.onclick = null;
+  }
+}
+
+// =======================================================
+// REAL-TIME INSTANT CHANGE
+// =======================================================
+supabaseClient
+  .channel('schema-db-changes')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+    fetchTasks();
+    fetchProjects(); // Update halaman project vertikal otomatis saat ada perubahan database
+  })
+  .subscribe();
+
+checkSession();
