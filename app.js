@@ -7,7 +7,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_ZZvJjet_A_XfGmqfNJhPOg_-P3z_snJ";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentWorker = localStorage.getItem('worker_name') || '';
 
-// SISTEM IDENTIFIKASI MASTER (Tentukan nama master di sini)
+// SISTEM IDENTIFIKASI MASTER
 const MASTER_USERS = ["yudha", "Yudha", "Jufri", "jufri", "danra", "Danra", "nadya", "Nadya"]; 
 
 // Cek apakah user aktif saat ini tergolong Master
@@ -31,10 +31,10 @@ function checkSession() {
     if (userDisplay) userDisplay.innerText = currentWorker + (isMasterUser() ? " (Master)" : "");
     if (avatarLetter) avatarLetter.innerText = currentWorker.charAt(0).toUpperCase();
     
-    // Default tab awal ke boards saat berhasil memuat sesi
+    // Default masuk ke halaman boards awal
     switchTab('boards');
   } else {
-    if (loginPanel) loginPanel.classList.remove('hidden'); // PERBAIKAN: Gunakan classList.remove untuk Tailwind
+    if (loginPanel) loginPanel.classList.remove('hidden');
     if (mainTracker) mainTracker.classList.add('hidden');
   }
 }
@@ -70,7 +70,6 @@ function switchTab(tabName) {
     if (projectsPage) projectsPage.classList.add('hidden');
     if (customTitle) customTitle.innerText = "Design boards";
     
-    // Aktifkan style menu
     if (menuBoards) menuBoards.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-blue-600 bg-blue-50/60 rounded-xl transition-all cursor-pointer";
     if (menuProjects) menuProjects.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
     fetchTasks();
@@ -79,7 +78,6 @@ function switchTab(tabName) {
     if (projectsPage) projectsPage.classList.remove('hidden');
     if (customTitle) customTitle.innerText = "All Projects vertical list";
 
-    // Aktifkan style menu
     if (menuProjects) menuProjects.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-blue-600 bg-blue-50/60 rounded-xl transition-all cursor-pointer";
     if (menuBoards) menuBoards.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
     fetchProjects();
@@ -143,7 +141,6 @@ function renderTasks(tasks) {
     const initial = creator.charAt(0).toUpperCase();
     const safeTaskJson = JSON.stringify(task).replace(/"/g, '&quot;');
 
-    // TAMPILKAN FORMAT TANGGAL DEADLINE DI KANBAN BOARDS
     let deadlineHTML = '';
     if (task.deadline) {
       try {
@@ -160,11 +157,9 @@ function renderTasks(tasks) {
 
     card.innerHTML = `
       <div class="cursor-pointer group flex flex-col gap-1 flex-1" onclick="openDetailModal(${safeTaskJson})">
-        <p class="font-bold text-slate-800 text-[13px] leading-snug break-all group-hover:text-blue-600 transition-colors">${task.title}</p>
+        <p class="font-bold text-slate-800 text-[13px] leading-snug break-all group-hover:text-blue-600 transition-colors">${task.title || 'Tanpa Judul'}</p>
         ${task.notes ? `<p class="text-[11px] text-slate-400 leading-normal mt-0.5 line-clamp-2 border-l-2 border-slate-200 pl-1.5">${task.notes}</p>` : ''}
-        
         ${deadlineHTML}
-        
         ${task.master_notes ? `<p class="text-[10px] text-amber-600 font-medium bg-amber-50 px-1.5 py-0.5 rounded mt-1 w-max">📋 Ada Arahan Master</p>` : ''}
       </div>
       
@@ -181,7 +176,7 @@ function renderTasks(tasks) {
     if (task.status === 'todo') {
       todoList.appendChild(card);
       todoCount++;
-    } else if (task.status === 'in_progress' || task.status === 'in_progress') {
+    } else if (task.status === 'in_progress') {
       inprogressList.appendChild(card);
       inprogressCount++;
     } else if (task.status === 'done') {
@@ -225,7 +220,6 @@ async function fetchProjects() {
     tasks.forEach(task => {
       const creator = task.worker_name || 'Anonim';
       
-      // TAMPILKAN FORMAT TANGGAL DEADLINE DI DAFTAR VERTIKAL PROJECTS
       let deadlineText = '';
       if (task.deadline) {
         const d = new Date(task.deadline);
@@ -256,14 +250,13 @@ async function fetchProjects() {
         <div class="flex items-start justify-between gap-4">
           <div>
             <div class="flex items-center gap-2 flex-wrap">
-              <h4 class="text-sm font-bold text-slate-800 leading-snug">${task.title}</h4>
+              <h4 class="text-sm font-bold text-slate-800 leading-snug">${task.title || 'Tanpa Judul'}</h4>
               ${deadlineText}
             </div>
             <p class="text-xs text-slate-400 mt-1">${task.notes || 'Tidak ada deskripsi'}</p>
           </div>
           <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 shrink-0 uppercase tracking-wider">Oleh: ${creator}</span>
         </div>
-        
         ${notesHTML}
         ${masterActionHTML}
       `;
@@ -321,7 +314,8 @@ function openModal() {
   const modal = document.getElementById('taskModal');
   if (modal) {
     modal.classList.remove('hidden');
-    document.getElementById('modalTaskTitle').focus();
+    const modalTitle = document.getElementById('modalTaskTitle');
+    if (modalTitle) modalTitle.focus();
 
     modal.onclick = function(event) {
       if (event.target === modal) {
@@ -336,8 +330,9 @@ function closeModal() {
   if (modal) {
     modal.classList.add('hidden');
     modal.onclick = null;
-    document.getElementById('modalTaskTitle').value = '';
-    document.getElementById('modalTaskNotes').value = '';
+    
+    if (document.getElementById('modalTaskTitle')) document.getElementById('modalTaskTitle').value = '';
+    if (document.getElementById('modalTaskNotes')) document.getElementById('modalTaskNotes').value = '';
     
     const deadlineInput = document.getElementById('modalTaskDeadline');
     if (deadlineInput) deadlineInput.value = '';
@@ -391,7 +386,7 @@ function openDetailModal(task) {
 
   if (!modal) return;
 
-  if (titleEl) titleEl.innerText = task.title;
+  if (titleEl) titleEl.innerText = task.title || 'Tanpa Judul';
   if (workerEl) workerEl.innerText = task.worker_name || 'Anonim';
 
   if (notesEl) {
@@ -418,7 +413,7 @@ function openDetailModal(task) {
     if (task.status === 'todo') {
       badgeEl.innerText = "To Do";
       badgeEl.className = "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-600 border border-amber-100";
-    } else if (task.status === 'in_progress' || task.status === 'in_progress') {
+    } else if (task.status === 'in_progress') {
       badgeEl.innerText = "In Progress";
       badgeEl.className = "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100";
     } else if (task.status === 'done') {
@@ -455,7 +450,7 @@ supabaseClient
   })
   .subscribe(); 
 
-// MENJALANKAN PENGECEKAN SESI SAAT DOM SIAP 100%
+// MENJALANKAN PENGECEKAN SESI SETELAH DOM SIAP ALAMI
 document.addEventListener('DOMContentLoaded', () => {
   checkSession();
 });
