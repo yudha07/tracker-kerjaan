@@ -35,7 +35,7 @@ function checkSession() {
     fetchTasks();
     fetchProjects();
   } else {
-    if (loginPanel) loginPanel.classList.remove('hidden');
+    if (loginPanel) loginPanel.remove('hidden');
     if (mainTracker) mainTracker.classList.add('hidden');
   }
 }
@@ -144,10 +144,28 @@ function renderTasks(tasks) {
     const initial = creator.charAt(0).toUpperCase();
     const safeTaskJson = JSON.stringify(task).replace(/"/g, '&quot;');
 
+    // TAMPILKAN FORMAT TANGGAL DEADLINE DI KANBAN BOARDS
+    let deadlineHTML = '';
+    if (task.deadline) {
+      try {
+        const dateObj = new Date(task.deadline);
+        if (!isNaN(dateObj)) {
+          const options = { day: '2-digit', month: 'short', year: 'numeric' };
+          const formattedDate = dateObj.toLocaleDateString('id-ID', options);
+          deadlineHTML = `<p class="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-100/60 px-2 py-0.5 rounded-md w-max mt-1 flex items-center gap-1">🗓️ DL: ${formattedDate}</p>`;
+        }
+      } catch (e) {
+        console.error("Format tanggal error", e);
+      }
+    }
+
     card.innerHTML = `
       <div class="cursor-pointer group flex flex-col gap-1 flex-1" onclick="openDetailModal(${safeTaskJson})">
         <p class="font-bold text-slate-800 text-[13px] leading-snug break-all group-hover:text-blue-600 transition-colors">${task.title}</p>
         ${task.notes ? `<p class="text-[11px] text-slate-400 leading-normal mt-0.5 line-clamp-2 border-l-2 border-slate-200 pl-1.5">${task.notes}</p>` : ''}
+        
+        ${deadlineHTML}
+        
         ${task.master_notes ? `<p class="text-[10px] text-amber-600 font-medium bg-amber-50 px-1.5 py-0.5 rounded mt-1 w-max">📋 Ada Arahan Master</p>` : ''}
       </div>
       
@@ -208,6 +226,15 @@ async function fetchProjects() {
     tasks.forEach(task => {
       const creator = task.worker_name || 'Anonim';
       
+      // TAMPILKAN FORMAT TANGGAL DEADLINE DI DAFTAR VERTIKAL PROJECTS
+      let deadlineText = '';
+      if (task.deadline) {
+        const d = new Date(task.deadline);
+        if (!isNaN(d)) {
+          deadlineText = `<span class="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-lg flex items-center gap-1">🗓️ Deadline: ${d.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'})}</span>`;
+        }
+      }
+
       // Bagian visual tampilan arahan master yang sudah ada
       const notesHTML = task.master_notes 
         ? `<div class="bg-amber-50 border border-amber-100 rounded-xl p-3.5 text-xs text-amber-900 leading-relaxed mt-2">
@@ -231,7 +258,10 @@ async function fetchProjects() {
       itemCard.innerHTML = `
         <div class="flex items-start justify-between gap-4">
           <div>
-            <h4 class="text-sm font-bold text-slate-800 leading-snug">${task.title}</h4>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h4 class="text-sm font-bold text-slate-800 leading-snug">${task.title}</h4>
+              ${deadlineText}
+            </div>
             <p class="text-xs text-slate-400 mt-1">${task.notes || 'Tidak ada deskripsi'}</p>
           </div>
           <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 shrink-0 uppercase tracking-wider">Oleh: ${creator}</span>
@@ -429,6 +459,6 @@ supabaseClient
     fetchTasks();
     fetchProjects(); // Update halaman project vertikal otomatis saat ada perubahan database
   })
-  .subscribe(); // <-- PASTIKAN ADA STRUKTUR TUTUP SEPERTI INI
+  .subscribe(); 
 
-checkSession(); // <-- DAN INI DI BARIS PALING AKHIR
+checkSession();
