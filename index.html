@@ -58,8 +58,8 @@
             <p class="text-xs font-bold text-slate-800 truncate" id="currentUserDisplay"></p>
             <p class="text-[10px] text-green-500 font-medium flex items-center gap-1">
               <span class="kedip-cepat">●</span> Online
-          </p>
-</div>
+            </p>
+          </div>
         </div>
         <button onclick="handleLogout()" class="text-xs hover:bg-slate-200 p-1.5 rounded-lg text-slate-400 hover:text-red-500 transition-all cursor-pointer" title="Keluar">🚪 Logout</button>
       </div>
@@ -94,108 +94,3 @@
             </div>
             <div id="todo-list" class="space-y-3 min-h-[150px]"></div>
           </div>
-
-          <div class="bg-[#F9FAFE] border border-[#EBF0FA] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
-            <div class="flex items-center justify-between mb-4 px-1">
-              <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-indigo-500 kedip-cepat"></div>
-                <h2 class="text-xs font-bold uppercase tracking-wider text-indigo-700">In Progress</h2>
-              </div>
-              <span id="inprogress-count" class="text-[11px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">0</span>
-            </div>
-            <div id="inprogress-list" class="space-y-3 min-h-[150px]"></div>
-          </div>
-
-          <div class="bg-[#FFF9FA] border border-[#FCEAEF] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
-            <div class="flex items-center justify-between mb-4 px-1">
-              <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-pink-500 kedip-cepat"></div>
-                <h2 class="text-xs font-bold uppercase tracking-wider text-pink-700">Done</h2>
-              </div>
-              <span id="done-count" class="text-[11px] font-bold bg-pink-50 text-pink-600 px-2 py-0.5 rounded-full">0</span>
-            </div>
-            <div id="done-list" class="space-y-3 min-h-[150px]"></div>
-          </div>
-
-        </div>
-      </div>
-
-      <div id="projects-page" class="hidden bg-white border border-slate-100 rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
-        <div class="flex items-center justify-between mb-6 border-b border-slate-50 pb-4">
-          <div>
-            <h3 class="text-base font-bold text-slate-800">All Projects List</h3>
-            <p class="text-xs text-slate-400 mt-0.5">Daftar seluruh pekerjaan secara vertikal beserta Arahan Master</p>
-          </div>
-          <span class="text-xs bg-blue-50 text-blue-600 font-bold px-3 py-1 rounded-full" id="project-total-count">0 Projects</span>
-        </div>
-        <div id="projects-vertical-list" class="space-y-4"></div>
-      </div>
-
-    </main>
-  </div>
-
-  <div id="detailModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 p-4 transition-all">
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-2xl w-full max-w-lg p-6 overflow-hidden scale-95 transition-all">
-      <div class="flex items-center justify-between mb-4 border-b border-slate-50 pb-3">
-        <div class="flex items-center gap-2">
-          <span id="detailStatusBadge" class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md">Status</span>
-        </div>
-        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">✕</button>
-      </div>
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Judul Project</label>
-          <h2 id="detailTitle" class="text-base md:text-lg font-bold text-slate-800 leading-snug break-words">Judul Pekerjaan</h2>
-        </div>
-        
-        <div>
-          <label class="block text-xs font-bold text-slate-400 tracking-wider uppercase mb-1">Notes / Catatan Lengkap</label>
-          <div id="detailNotes" class="bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm text-slate-600 leading-relaxed max-h-40 overflow-y-auto whitespace-pre-line break-words">
-            Tidak ada catatan tambahan untuk tugas ini.
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-amber-500 tracking-wider uppercase mb-1">📋 Arahan / Instruksi Master</label>
-          <div id="detailMasterNotes" class="bg-amber-50/60 border border-amber-100 rounded-xl p-4 text-sm text-amber-800 leading-relaxed max-h-32 overflow-y-auto whitespace-pre-line break-words italic">
-            Belum ada arahan dari master.
-          </div>
-        </div>
-        
-        <div class="flex items-center justify-between border-t border-slate-50 pt-3 text-[11px] text-slate-400">
-          <p>Dibuat Oleh: <span id="detailWorker" class="font-semibold text-slate-600">Nama</span></p>
-          <button onclick="closeDetailModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer">Tutup</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="taskModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center hidden z-50 p-4 transition-all">
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-2xl w-full max-w-md p-6 overflow-hidden scale-95 transition-all">
-      <div class="flex items-center justify-between mb-4 border-b border-slate-50 pb-3">
-        <h3 class="text-base font-bold text-slate-800">Create New Task</h3>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">✕</button>
-      </div>
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-500 tracking-wider mb-1.5 uppercase">Judul Project</label>
-          <input type="text" id="modalTaskTitle" placeholder="Ketik judul project..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition-all">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-500 tracking-wider mb-1.5 uppercase">Notes / Catatan</label>
-          <textarea id="modalTaskNotes" rows="3" placeholder="Tambahkan deskripsi atau catatan khusus..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-blue-500 focus:bg-white transition-all resize-none"></textarea>
-        </div>
-        
-        <div class="flex items-center justify-end gap-2 pt-2">
-          <button onclick="closeModal()" class="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-50 rounded-xl transition-all cursor-pointer">Cancel</button>
-          <button onclick="submitModalTask()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-4 py-2 rounded-xl shadow-md shadow-blue-500/10 transition-all cursor-pointer">Add Task</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
-</body>
-</html>
