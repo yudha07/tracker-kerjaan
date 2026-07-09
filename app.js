@@ -429,6 +429,6 @@ supabaseClient
     fetchTasks();
     fetchProjects(); // Update halaman project vertikal otomatis saat ada perubahan database
   })
-  .subscribe();
+  .subscribe(); // <-- PASTIKAN ADA STRUKTUR TUTUP SEPERTI INI
 
-checkSession();
+checkSession(); // <-- DAN INI DI BARIS PALING AKHIR
