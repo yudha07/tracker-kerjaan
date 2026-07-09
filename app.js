@@ -2,7 +2,7 @@
 // CONFIGURATION: DATA SUPABASE ANDA
 // =======================================================
 const SUPABASE_URL = "https://bawlxbtnocmangcblngu.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_ZZvJjet_A_XfGmqfNJhPOg_-P3z_snJ"; // <-- JANGAN LUPA PASTE ANON KEY ANDA DI SINI
+const SUPABASE_ANON_KEY = "sb_publishable_ZZvJjet_A_XfGmqfNJhPOg_-P3z_snJ"; 
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentWorker = localStorage.getItem('worker_name') || '';
@@ -31,11 +31,10 @@ function checkSession() {
     if (userDisplay) userDisplay.innerText = currentWorker + (isMasterUser() ? " (Master)" : "");
     if (avatarLetter) avatarLetter.innerText = currentWorker.charAt(0).toUpperCase();
     
-    // Tarik data awal untuk boards dan projects
-    fetchTasks();
-    fetchProjects();
+    // Default tab awal ke boards saat berhasil memuat sesi
+    switchTab('boards');
   } else {
-    if (loginPanel) loginPanel.remove('hidden');
+    if (loginPanel) loginPanel.classList.remove('hidden'); // PERBAIKAN: Gunakan classList.remove untuk Tailwind
     if (mainTracker) mainTracker.classList.add('hidden');
   }
 }
@@ -72,8 +71,8 @@ function switchTab(tabName) {
     if (customTitle) customTitle.innerText = "Design boards";
     
     // Aktifkan style menu
-    menuBoards.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-blue-600 bg-blue-50/60 rounded-xl transition-all cursor-pointer";
-    menuProjects.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+    if (menuBoards) menuBoards.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-blue-600 bg-blue-50/60 rounded-xl transition-all cursor-pointer";
+    if (menuProjects) menuProjects.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
     fetchTasks();
   } else if (tabName === 'projects') {
     if (boardsView) boardsView.classList.add('hidden');
@@ -81,8 +80,8 @@ function switchTab(tabName) {
     if (customTitle) customTitle.innerText = "All Projects vertical list";
 
     // Aktifkan style menu
-    menuProjects.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-blue-600 bg-blue-50/60 rounded-xl transition-all cursor-pointer";
-    menuBoards.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
+    if (menuProjects) menuProjects.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-blue-600 bg-blue-50/60 rounded-xl transition-all cursor-pointer";
+    if (menuBoards) menuBoards.className = "w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-all cursor-pointer";
     fetchProjects();
   }
 }
@@ -182,7 +181,7 @@ function renderTasks(tasks) {
     if (task.status === 'todo') {
       todoList.appendChild(card);
       todoCount++;
-    } else if (task.status === 'in_progress') {
+    } else if (task.status === 'in_progress' || task.status === 'in_progress') {
       inprogressList.appendChild(card);
       inprogressCount++;
     } else if (task.status === 'done') {
@@ -191,9 +190,9 @@ function renderTasks(tasks) {
     }
   });
 
-  document.getElementById('todo-count').innerText = todoCount;
-  document.getElementById('inprogress-count').innerText = inprogressCount;
-  document.getElementById('done-count').innerText = doneCount;
+  if (document.getElementById('todo-count')) document.getElementById('todo-count').innerText = todoCount;
+  if (document.getElementById('inprogress-count')) document.getElementById('inprogress-count').innerText = inprogressCount;
+  if (document.getElementById('done-count')) document.getElementById('done-count').innerText = doneCount;
 }
 
 // =======================================================
@@ -235,14 +234,12 @@ async function fetchProjects() {
         }
       }
 
-      // Bagian visual tampilan arahan master yang sudah ada
       const notesHTML = task.master_notes 
         ? `<div class="bg-amber-50 border border-amber-100 rounded-xl p-3.5 text-xs text-amber-900 leading-relaxed mt-2">
             <strong>📋 Arahan Master:</strong> "${task.master_notes}"
            </div>` 
         : `<div class="text-[11px] text-slate-400 italic mt-2 pl-1">Belum ada arahan dari master.</div>`;
 
-      // KONTROL AKSES: Box input pengetikan arahan hanya dibuat jika login sebagai Master
       let masterActionHTML = "";
       if (isMasterUser()) {
         masterActionHTML = `
@@ -303,14 +300,14 @@ async function submitMasterNote(taskId) {
   try {
     const { error } = await supabaseClient
       .from('tasks')
-      .update({ master_notes: noteValue }) // Update kolom master_notes di baris ID project ini
+      .update({ master_notes: noteValue })
       .eq('id', taskId);
 
     if (error) {
       alert("Gagal mengirim arahan: " + error.message);
     } else {
       alert("Arahan berhasil disimpan!");
-      fetchProjects(); // Segarkan tampilan vertical list otomatis
+      fetchProjects();
     }
   } catch (err) {
     console.error("Gagal save note:", err);
@@ -342,7 +339,6 @@ function closeModal() {
     document.getElementById('modalTaskTitle').value = '';
     document.getElementById('modalTaskNotes').value = '';
     
-    // PEMBARUAN: Mengosongkan value input tanggal deadline saat modal ditutup
     const deadlineInput = document.getElementById('modalTaskDeadline');
     if (deadlineInput) deadlineInput.value = '';
   }
@@ -351,16 +347,15 @@ function closeModal() {
 async function submitModalTask() {
   const titleInput = document.getElementById('modalTaskTitle');
   const notesInput = document.getElementById('modalTaskNotes');
-  const deadlineInput = document.getElementById('modalTaskDeadline'); // PEMBARUAN: Ambil elemen tanggal
+  const deadlineInput = document.getElementById('modalTaskDeadline');
   
   const title = titleInput ? titleInput.value.trim() : '';
   const notes = notesInput ? notesInput.value.trim() : '';
-  const deadline = deadlineInput ? deadlineInput.value : null; // PEMBARUAN: Ambil isi value tanggal (Format: YYYY-MM-DD)
+  const deadline = deadlineInput ? deadlineInput.value : null;
 
   if (!title) return alert('Judul project wajib diisi!');
 
   try {
-    // PEMBARUAN: Menambahkan kolom 'deadline' ke dalam objek insert Supabase
     const { error } = await supabaseClient
       .from('tasks')
       .insert([{ 
@@ -368,7 +363,7 @@ async function submitModalTask() {
         notes: notes, 
         status: 'todo', 
         worker_name: currentWorker,
-        deadline: deadline || null // Jika kosong, akan dikirim sebagai NULL aman di database
+        deadline: deadline || null 
       }]);
       
     if (error) {
@@ -409,7 +404,6 @@ function openDetailModal(task) {
     }
   }
 
-  // Tampilkan arahan master di dalam modal detail jika ada
   if (masterNotesEl) {
     if (task.master_notes && task.master_notes.trim() !== '') {
       masterNotesEl.innerText = task.master_notes;
@@ -424,7 +418,7 @@ function openDetailModal(task) {
     if (task.status === 'todo') {
       badgeEl.innerText = "To Do";
       badgeEl.className = "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-600 border border-amber-100";
-    } else if (task.status === 'in_progress') {
+    } else if (task.status === 'in_progress' || task.status === 'in_progress') {
       badgeEl.innerText = "In Progress";
       badgeEl.className = "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100";
     } else if (task.status === 'done') {
@@ -457,8 +451,11 @@ supabaseClient
   .channel('schema-db-changes')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
     fetchTasks();
-    fetchProjects(); // Update halaman project vertikal otomatis saat ada perubahan database
+    fetchProjects(); 
   })
   .subscribe(); 
 
-checkSession();
+// MENJALANKAN PENGECEKAN SESI SAAT DOM SIAP 100%
+document.addEventListener('DOMContentLoaded', () => {
+  checkSession();
+});
